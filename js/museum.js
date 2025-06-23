@@ -405,46 +405,63 @@ class VRMuseum {
     createPhotoFrame(photo, position, theme) {
         console.log(`🖼️ Creating frame for photo: ${photo.src}`, { photo, position, theme });
 
+        // Main container
         const frameEntity = document.createElement('a-entity');
+        frameEntity.setAttribute('class', 'interactive photo-frame');
         frameEntity.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
-
         if (position.rotation) {
+            // FIX: Use correct rotation axes (x, y, z)
             frameEntity.setAttribute('rotation', `${position.rotation.x} ${position.rotation.y} ${position.rotation.z}`);
         }
 
-        frameEntity.setAttribute('class', 'interactive photo-frame');
-
+        // Frame background
+        const frameBG = document.createElement('a-box');
         const frameColor = theme.id === 'thailand' ? '#8B4513' : '#2c2c2c';
         const frameWidth = 2.2;
         const frameHeight = 1.7;
+        frameBG.setAttribute('width', frameWidth);
+        frameBG.setAttribute('height', frameHeight);
+        frameBG.setAttribute('depth', 0.1);
+        frameBG.setAttribute('color', frameColor);
+        frameBG.setAttribute('material', 'roughness: 0.8; metalness: 0.1');
+        frameBG.setAttribute('shadow', 'cast: true');
+        frameEntity.appendChild(frameBG);
 
-        frameEntity.innerHTML = `
-            <a-box class="frame-bg" 
-                   width="${frameWidth}" height="${frameHeight}" depth="0.1"
-                   color="${frameColor}"
-                   material="roughness: 0.8; metalness: 0.1"
-                   shadow="cast: true">
-            </a-box>
-            <a-plane class="photo-image"
-                     width="${frameWidth - 0.2}" height="${frameHeight - 0.2}"
-                     position="0 0 0.06"
-                     material="shader: flat; src: ${photo.src}; transparent: true; color: #fff;">
-            </a-plane>
-            <a-text class="photo-title"
-                    value="${photo.title || ''}"
-                    position="0 -${frameHeight / 2 + 0.2} 0.06"
-                    align="center" color="#ffffff" width="6" font="dejavu">
-            </a-text>
-        `;
+        // The image itself
+        const imagePlane = document.createElement('a-plane');
+        imagePlane.setAttribute('width', frameWidth - 0.2);
+        imagePlane.setAttribute('height', frameHeight - 0.2);
+        imagePlane.setAttribute('position', '0 0 0.06');
         
-        const imagePlane = frameEntity.querySelector('.photo-image');
+        // CRITICAL FIX: Set the material src attribute correctly as an object.
+        // This avoids template string issues and lets A-Frame handle the path safely.
+        imagePlane.setAttribute('material', {
+            shader: 'flat',
+            src: photo.src,
+            transparent: true,
+            color: '#fff'
+        });
+
+        // Add event listeners for debugging
         imagePlane.addEventListener('materialtextureloaded', () => {
             console.log(`✅ Texture loaded successfully for ${photo.src}`);
         });
         imagePlane.addEventListener('materialerror', (err) => {
             console.error(`❌ Texture FAILED to load for ${photo.src}`, err);
         });
-
+        frameEntity.appendChild(imagePlane);
+        
+        // Title text
+        const textEntity = document.createElement('a-text');
+        textEntity.setAttribute('value', photo.title || '');
+        textEntity.setAttribute('position', `0 -${frameHeight / 2 + 0.2} 0.06`);
+        textEntity.setAttribute('align', 'center');
+        textEntity.setAttribute('color', '#ffffff');
+        textEntity.setAttribute('width', 6);
+        textEntity.setAttribute('font', 'dejavu');
+        frameEntity.appendChild(textEntity);
+        
+        // Click handler
         frameEntity.addEventListener('click', () => this.onPhotoClick(photo));
 
         this.photoContainer.appendChild(frameEntity);
