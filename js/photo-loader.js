@@ -18,13 +18,26 @@ class PhotoLoader {
         console.log(`📁 Loading photos from: ${themePath}`);
         
         try {
-            // First, try to load the photo manifest if it exists
+            // First, try to load the photo manifest
             const manifest = await this.loadPhotoManifest(themePath);
-            if (manifest && manifest.photos.length > 0) {
-                return await this.loadPhotosFromManifest(manifest, themePath);
+            if (manifest && manifest.photos && manifest.photos.length > 0) {
+                console.log(`Found manifest with ${manifest.photos.length} photos`);
+                const photos = await this.loadPhotosFromManifest(manifest, themePath);
+                if (photos.length > 0) {
+                    console.log(`✅ Successfully loaded ${photos.length} photos from manifest`);
+                    return photos;
+                }
             }
             
-            // Fallback: load demo photos for development
+            // Fallback: try to load photos by scanning common names
+            console.log('Trying fallback photo loading...');
+            const fallbackPhotos = await this.loadPhotosWithFallback(themePath, themeId);
+            if (fallbackPhotos.length > 0) {
+                return fallbackPhotos;
+            }
+            
+            // Last resort: demo photos
+            console.log('Using demo photos as last resort');
             return this.createDemoPhotos(themeId);
             
         } catch (error) {
@@ -41,15 +54,18 @@ class PhotoLoader {
     async loadPhotoManifest(themePath) {
         try {
             const manifestPath = `${themePath}photos.json`;
+            console.log(`Trying to load manifest from: ${manifestPath}`);
             const response = await fetch(manifestPath);
             
             if (!response.ok) {
                 throw new Error(`Manifest not found: ${response.status}`);
             }
             
-            return await response.json();
+            const manifest = await response.json();
+            console.log('✅ Manifest loaded successfully:', manifest);
+            return manifest;
         } catch (error) {
-            console.log(`No manifest found at ${themePath}photos.json - using fallback`);
+            console.log(`No manifest found at ${themePath}photos.json - error:`, error);
             return null;
         }
     }
@@ -66,9 +82,13 @@ class PhotoLoader {
         for (const photoData of manifest.photos) {
             try {
                 const photoUrl = `${basePath}${photoData.filename}`;
+                console.log(`Checking photo: ${photoUrl}`);
                 
                 // Check if image exists
-                if (await this.checkImageExists(photoUrl)) {
+                const exists = await this.checkImageExists(photoUrl);
+                console.log(`Photo ${photoData.filename} exists: ${exists}`);
+                
+                if (exists) {
                     photos.push({
                         src: photoUrl,
                         title: photoData.title || photoData.filename,
@@ -77,10 +97,62 @@ class PhotoLoader {
                         location: photoData.location || '',
                         tags: photoData.tags || []
                     });
+                } else {
+                    console.warn(`Photo not found: ${photoUrl}`);
                 }
             } catch (error) {
                 console.warn(`Failed to load photo: ${photoData.filename}`, error);
             }
+        }
+        
+        console.log(`Loaded ${photos.length} photos from manifest`);
+        return photos;
+    }
+    
+    /**
+     * Fallback method to load photos by common naming patterns
+     * @param {string} themePath - Path to theme folder
+     * @param {string} themeId - Theme identifier
+     * @returns {Promise<Array>} Array of photo objects
+     */
+    async loadPhotosWithFallback(themePath, themeId) {
+        const photos = [];
+        const commonExtensions = ['JPG', 'jpg', 'PNG', 'png', 'JPEG', 'jpeg'];
+        const commonNames = [];
+        
+        // Generate common photo names for Thailand
+        if (themeId === 'thailand') {
+            for (let i = 1; i <= 20; i++) {
+                commonNames.push(`thailand${i}`);
+                commonNames.push(`Thailand${i}`);
+            }
+        }
+        
+        // Try each combination
+        for (const name of commonNames) {
+            for (const ext of commonExtensions) {
+                const filename = `${name}.${ext}`;
+                const photoUrl = `${themePath}${filename}`;
+                
+                try {
+                    if (await this.checkImageExists(photoUrl)) {
+                        photos.push({
+                            src: photoUrl,
+                            title: `${themeId.charAt(0).toUpperCase() + themeId.slice(1)} Photo ${photos.length + 1}`,
+                            description: `Beautiful memory from ${themeId}`,
+                            location: themeId.charAt(0).toUpperCase() + themeId.slice(1),
+                            date: new Date().toISOString().split('T')[0]
+                        });
+                        console.log(`✅ Found photo: ${filename}`);
+                        
+                        // Limit to 12 photos max
+                        if (photos.length >= 12) break;
+                    }
+                } catch (error) {
+                    // Silent fail for this method
+                }
+            }
+            if (photos.length >= 12) break;
         }
         
         return photos;
@@ -94,9 +166,21 @@ class PhotoLoader {
     checkImageExists(url) {
         return new Promise((resolve) => {
             const img = new Image();
-            img.onload = () => resolve(true);
-            img.onerror = () => resolve(false);
+            img.onload = () => {
+                console.log(`✅ Image loaded: ${url}`);
+                resolve(true);
+            };
+            img.onerror = () => {
+                console.log(`❌ Image failed: ${url}`);
+                resolve(false);
+            };
             img.src = url;
+            
+            // Timeout after 10 seconds
+            setTimeout(() => {
+                console.log(`⏰ Image timeout: ${url}`);
+                resolve(false);
+            }, 10000);
         });
     }
     
@@ -106,6 +190,8 @@ class PhotoLoader {
      * @returns {Array} Array of demo photo objects
      */
     createDemoPhotos(themeId) {
+        console.log(`Creating demo photos for theme: ${themeId}`);
+        
         const demoPhotos = {
             gallery: [
                 {
@@ -170,7 +256,9 @@ class PhotoLoader {
      * @returns {Promise<Array>} Promise that resolves when all images are loaded
      */
     async preloadImages(photos) {
-        const loadPromises = photos.map(photo => {
+        console.log(`Preloading ${photos.length} images...`);
+        
+        const loadPromises = photos.map((photo, index) => {
             return new Promise((resolve, reject) => {
                 if (this.photoCache.has(photo.src)) {
                     resolve(this.photoCache.get(photo.src));
@@ -179,17 +267,21 @@ class PhotoLoader {
                 
                 const img = new Image();
                 img.onload = () => {
+                    console.log(`✅ Preloaded image ${index + 1}: ${photo.title}`);
                     this.photoCache.set(photo.src, img);
                     resolve(img);
                 };
-                img.onerror = reject;
+                img.onerror = (error) => {
+                    console.warn(`❌ Failed to preload image ${index + 1}: ${photo.title}`, error);
+                    reject(error);
+                };
                 img.src = photo.src;
             });
         });
         
         try {
-            await Promise.all(loadPromises);
-            console.log(`✅ Preloaded ${photos.length} images`);
+            await Promise.allSettled(loadPromises);
+            console.log(`✅ Preloading completed for ${photos.length} images`);
         } catch (error) {
             console.warn('Some images failed to preload:', error);
         }
@@ -249,57 +341,56 @@ class PhotoLoader {
      * @returns {Array} Array of position objects
      */
     generatePhotoPositions(photoCount, layout = 'wall') {
+        console.log(`Generating ${layout} layout for ${photoCount} photos`);
         const positions = [];
         
         switch (layout) {
             case 'wall':
                 // Standard wall layout
                 const spacing = 3;
-                const wallWidth = Math.ceil(Math.sqrt(photoCount)) * spacing;
-                let x = -wallWidth / 2;
-                let y = 2;
-                
-                for (let i = 0; i < photoCount; i++) {
-                    positions.push({
-                        x: x + (i % Math.ceil(Math.sqrt(photoCount))) * spacing,
-                        y: y,
-                        z: -7,
-                        rotation: { x: 0, y: 0, z: 0 }
-                    });
-                    
-                    if ((i + 1) % Math.ceil(Math.sqrt(photoCount)) === 0) {
-                        y += 2;
-                    }
-                }
-                break;
-                
-            case 'circle':
-                // Circular layout
-                const radius = Math.max(4, photoCount * 0.5);
-                for (let i = 0; i < photoCount; i++) {
-                    const angle = (i / photoCount) * Math.PI * 2;
-                    positions.push({
-                        x: Math.cos(angle) * radius,
-                        y: 2,
-                        z: Math.sin(angle) * radius,
-                        rotation: { x: 0, y: -angle * 180 / Math.PI, z: 0 }
-                    });
-                }
-                break;
-                
-            case 'grid':
-                // Grid layout
-                const cols = Math.ceil(Math.sqrt(photoCount));
+                const cols = Math.min(4, photoCount);
                 const rows = Math.ceil(photoCount / cols);
-                const gridSpacing = 2.5;
                 
                 for (let i = 0; i < photoCount; i++) {
                     const col = i % cols;
                     const row = Math.floor(i / cols);
                     
                     positions.push({
-                        x: (col - cols / 2) * gridSpacing,
+                        x: (col - cols / 2) * spacing + spacing / 2,
                         y: 2 + (rows / 2 - row) * 2,
+                        z: -7,
+                        rotation: { x: 0, y: 0, z: 0 }
+                    });
+                }
+                break;
+                
+            case 'circle':
+                // Circular layout
+                const radius = Math.max(5, photoCount * 0.8);
+                for (let i = 0; i < photoCount; i++) {
+                    const angle = (i / photoCount) * Math.PI * 2;
+                    positions.push({
+                        x: Math.cos(angle) * radius,
+                        y: 2,
+                        z: Math.sin(angle) * radius,
+                        rotation: { x: 0, y: -angle * 180 / Math.PI + 180, z: 0 }
+                    });
+                }
+                break;
+                
+            case 'grid':
+                // Grid layout
+                const gridCols = Math.ceil(Math.sqrt(photoCount));
+                const gridRows = Math.ceil(photoCount / gridCols);
+                const gridSpacing = 2.5;
+                
+                for (let i = 0; i < photoCount; i++) {
+                    const col = i % gridCols;
+                    const row = Math.floor(i / gridCols);
+                    
+                    positions.push({
+                        x: (col - gridCols / 2) * gridSpacing,
+                        y: 2 + (gridRows / 2 - row) * 2,
                         z: -6,
                         rotation: { x: 0, y: 0, z: 0 }
                     });
@@ -307,6 +398,7 @@ class PhotoLoader {
                 break;
         }
         
+        console.log(`Generated ${positions.length} positions for ${layout} layout`);
         return positions;
     }
 }

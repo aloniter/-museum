@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .photo { margin: 10px; max-width: 300px; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Thailand Photos Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function testPhotos() {
+            const results = document.getElementById('results');
+            const photos = [
+                'assets/photos/thailand/thailand1.JPG',
+                'assets/photos/thailand/thailand2.JPG',
+                'assets/photos/thailand/thailand3.JPG',
+                'assets/photos/thailand/thailand4.JPG',
+                'assets/photos/thailand/thailand5.JPG',
+                'assets/photos/thailand/thailand6.JPG',
+                'assets/photos/thailand/thailand7.JPG',
+                'assets/photos/thailand/thailand8.JPG'
+            ];
+            
+            for (let i = 0; i < photos.length; i++) {
+                const photoUrl = photos[i];
+                const div = document.createElement('div');
+                div.innerHTML = `<p>Testing: ${photoUrl}</p>`;
+                
+                try {
+                    const img = new Image();
+                    img.onload = () => {
+                        div.innerHTML += `<p class="success">✅ Loaded successfully!</p>`;
+                        div.innerHTML += `<img src="${photoUrl}" class="photo" alt="Thailand ${i+1}">`;
+                    };
+                    img.onerror = () => {
+                        div.innerHTML += `<p class="error">❌ Failed to load</p>`;
+                    };
+                    img.src = photoUrl;
+                } catch (error) {
+                    div.innerHTML += `<p class="error">❌ Error: ${error}</p>`;
+                }
+                
+                results.appendChild(div);
+            }
+            
+            // Test manifest
+            try {
+                const response = await fetch('assets/photos/thailand/photos.json');
+                const manifest = await response.json();
+                const manifestDiv = document.createElement('div');
+                manifestDiv.innerHTML = `
+                    <h2>Manifest Test</h2>
+                    <p class="success">✅ Manifest loaded: ${manifest.photos.length} photos configured</p>
+                    <pre>${JSON.stringify(manifest, null, 2)}</pre>
+                `;
+                results.appendChild(manifestDiv);
+            } catch (error) {
+                const manifestDiv = document.createElement('div');
+                manifestDiv.innerHTML = `
+                    <h2>Manifest Test</h2>
+                    <p class="error">❌ Manifest failed: ${error}</p>
+                `;
+                results.appendChild(manifestDiv);
+            }
+        }
+        
+        testPhotos();
+    </script>
+</body>
+</html> 
