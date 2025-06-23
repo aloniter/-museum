@@ -1,0 +1,38 @@
+{
+  "name": "vr-museum",
+  "version": "1.0.0",
+  "description": "A WebXR virtual reality museum for exploring personal photo collections",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve . -l 8000",
+    "dev": "npx live-server --port=8000",
+    "build": "echo 'No build process needed for static site'",
+    "deploy": "gh-pages -d .",
+    "setup": "node scripts/setup.js"
+  },
+  "keywords": [
+    "vr",
+    "webxr",
+    "museum",
+    "aframe",
+    "virtual-reality",
+    "photos",
+    "gallery",
+    "meta-quest"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "serve": "^14.2.1",
+    "gh-pages": "^6.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/museum.git"
+  },
+  "homepage": "https://yourusername.github.io/museum",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+} 

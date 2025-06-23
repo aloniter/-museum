@@ -1,0 +1,39 @@
+{
+  "theme": "gallery",
+  "title": "Modern Gallery Collection",
+  "description": "A curated collection of contemporary art and architecture",
+  "photos": [
+    {
+      "filename": "architecture-1.jpg",
+      "title": "Urban Geometry",
+      "description": "Modern architectural lines and shapes",
+      "date": "2024-01-15",
+      "location": "Downtown Museum",
+      "tags": ["architecture", "modern", "urban"]
+    },
+    {
+      "filename": "interior-1.jpg", 
+      "title": "Gallery Space",
+      "description": "Minimalist exhibition hall with natural lighting",
+      "date": "2024-01-20",
+      "location": "Contemporary Art Center",
+      "tags": ["interior", "gallery", "minimalist"]
+    },
+    {
+      "filename": "abstract-1.jpg",
+      "title": "Color Studies",
+      "description": "Abstract composition with vibrant colors",
+      "date": "2024-02-01",
+      "location": "Modern Art Wing",
+      "tags": ["abstract", "color", "contemporary"]
+    },
+    {
+      "filename": "sculpture-1.jpg",
+      "title": "Form and Function", 
+      "description": "Three-dimensional artwork in exhibition space",
+      "date": "2024-02-10",
+      "location": "Sculpture Hall",
+      "tags": ["sculpture", "3d", "exhibition"]
+    }
+  ]
+} 

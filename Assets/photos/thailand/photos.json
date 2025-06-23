@@ -1,0 +1,55 @@
+{
+  "theme": "thailand",
+  "title": "Thailand Adventure",  
+  "description": "Memories from an incredible journey through Thailand",
+  "photos": [
+    {
+      "filename": "temple-wat-pho.jpg",
+      "title": "Wat Pho Temple",
+      "description": "Golden Buddha statue at the Temple of the Reclining Buddha",
+      "date": "2024-03-15",
+      "location": "Bangkok, Thailand",
+      "tags": ["temple", "buddha", "bangkok", "spiritual", "architecture"]
+    },
+    {
+      "filename": "beach-phi-phi.jpg",
+      "title": "Phi Phi Islands",
+      "description": "Crystal clear turquoise waters and limestone cliffs",
+      "date": "2024-03-18", 
+      "location": "Phi Phi Islands, Thailand",
+      "tags": ["beach", "tropical", "ocean", "limestone", "paradise"]
+    },
+    {
+      "filename": "market-floating.jpg",
+      "title": "Floating Market",
+      "description": "Traditional boat vendors selling fresh fruits and local food",
+      "date": "2024-03-20",
+      "location": "Damnoen Saduak, Thailand", 
+      "tags": ["market", "boat", "food", "traditional", "culture"]
+    },
+    {
+      "filename": "jungle-khao-sok.jpg",
+      "title": "Khao Sok Rainforest",
+      "description": "Dense tropical jungle with towering trees and exotic wildlife",
+      "date": "2024-03-22",
+      "location": "Khao Sok National Park, Thailand",
+      "tags": ["jungle", "rainforest", "nature", "wildlife", "trees"]
+    },
+    {
+      "filename": "sunset-ayutthaya.jpg",
+      "title": "Ayutthaya Ruins",
+      "description": "Ancient temple ruins silhouetted against golden sunset",
+      "date": "2024-03-25",
+      "location": "Ayutthaya, Thailand",
+      "tags": ["ruins", "sunset", "historical", "ancient", "temple"]
+    },
+    {
+      "filename": "street-food-bangkok.jpg", 
+      "title": "Bangkok Street Food",
+      "description": "Vibrant night market with delicious Thai cuisine",
+      "date": "2024-03-16",
+      "location": "Chatuchak Market, Bangkok",
+      "tags": ["food", "street", "night", "market", "cuisine"]
+    }
+  ]
+} 
