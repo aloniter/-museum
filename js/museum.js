@@ -216,8 +216,8 @@ class VRMuseum {
             await this.loadEnvironment(theme);
             this.updateProgress(25);
             
-            // Load photos using PhotoLoader
-            const photos = await this.photoLoader.loadPhotosForTheme(theme.photoFolder, theme.id);
+            // Load photos using enhanced method
+            const photos = await this.loadPhotos(theme);
             this.updateProgress(50);
             
             // Preload images
@@ -681,6 +681,75 @@ class VRMuseum {
             </div>
         `;
         document.body.appendChild(errorModal);
+    }
+    
+    async loadPhotos(theme) {
+        console.log(`📸 Loading photos for theme: ${theme.name}`);
+        
+        // For Thailand theme, force load actual photos
+        if (theme.id === 'thailand') {
+            console.log('🇹🇭 Loading Thailand photos - bypassing demo photos');
+            
+            // Try to load actual Thailand photos directly
+            const actualPhotos = [];
+            for (let i = 1; i <= 8; i++) {
+                const photoUrl = `assets/photos/thailand/thailand${i}.JPG`;
+                console.log(`Testing photo: ${photoUrl}`);
+                
+                try {
+                    // Test if image loads
+                    const imageExists = await this.testImageLoad(photoUrl);
+                    if (imageExists) {
+                        actualPhotos.push({
+                            src: photoUrl,
+                            title: `Thailand Memory ${i}`,
+                            description: `Beautiful moment from Thailand adventure`,
+                            location: 'Thailand',
+                            date: '2024-06-23'
+                        });
+                        console.log(`✅ Added Thailand photo ${i}`);
+                    } else {
+                        console.log(`❌ Thailand photo ${i} not found`);
+                    }
+                } catch (error) {
+                    console.log(`❌ Error loading Thailand photo ${i}:`, error);
+                }
+            }
+            
+            if (actualPhotos.length > 0) {
+                console.log(`✅ Found ${actualPhotos.length} Thailand photos - using them!`);
+                return actualPhotos;
+            } else {
+                console.log('⚠️ No Thailand photos found, falling back to PhotoLoader');
+            }
+        }
+        
+        // Use PhotoLoader for other themes or fallback
+        const photos = await this.photoLoader.loadPhotosForTheme(theme.photoFolder, theme.id);
+        console.log(`PhotoLoader returned ${photos.length} photos for ${theme.id}`);
+        return photos;
+    }
+    
+    // Helper function to test if an image loads
+    testImageLoad(url) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                console.log(`✅ Image loaded successfully: ${url}`);
+                resolve(true);
+            };
+            img.onerror = () => {
+                console.log(`❌ Image failed to load: ${url}`);
+                resolve(false);
+            };
+            img.src = url;
+            
+            // Timeout after 5 seconds
+            setTimeout(() => {
+                console.log(`⏰ Image load timeout: ${url}`);
+                resolve(false);
+            }, 5000);
+        });
     }
 }
 
