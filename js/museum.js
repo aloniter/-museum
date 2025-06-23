@@ -691,16 +691,16 @@ class VRMuseum {
         console.log(`📸 Loading photos for theme: ${theme.name}`);
         
         if (theme.id === 'thailand') {
-            console.log('🇹🇭 FORCE-LOADING THAILAND PHOTOS (lowercase .jpg)');
+            console.log('🇹🇭 FORCE-LOADING THAILAND PHOTOS (uppercase .JPG)');
             const photoPaths = [
-                'assets/photos/thailand/thailand1.jpg',
-                'assets/photos/thailand/thailand2.jpg',
-                'assets/photos/thailand/thailand3.jpg',
-                'assets/photos/thailand/thailand4.jpg',
-                'assets/photos/thailand/thailand5.jpg',
-                'assets/photos/thailand/thailand6.jpg',
-                'assets/photos/thailand/thailand7.jpg',
-                'assets/photos/thailand/thailand8.jpg'
+                'assets/photos/thailand/thailand1.JPG',
+                'assets/photos/thailand/thailand2.JPG',
+                'assets/photos/thailand/thailand3.JPG',
+                'assets/photos/thailand/thailand4.JPG',
+                'assets/photos/thailand/thailand5.JPG',
+                'assets/photos/thailand/thailand6.JPG',
+                'assets/photos/thailand/thailand7.JPG',
+                'assets/photos/thailand/thailand8.JPG'
             ];
             
             const actualPhotos = photoPaths.map((path, i) => ({
@@ -711,7 +711,7 @@ class VRMuseum {
                 date: '2024-06-23'
             }));
 
-            console.log(`✅ Constructed ${actualPhotos.length} photo objects.`, actualPhotos);
+            console.log(`✅ Constructed ${actualPhotos.length} photo objects with .JPG extension.`, actualPhotos);
             return actualPhotos;
         }
         
