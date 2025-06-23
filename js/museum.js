@@ -231,8 +231,12 @@ class VRMuseum {
             const photos = await this.loadPhotos(theme);
             this.updateProgress(50);
             
-            // Preload images
-            await this.photoLoader.preloadImages(photos);
+            // Preload images (skip for Thailand to speed up loading)
+            if (theme.id !== 'thailand') {
+                await this.photoLoader.preloadImages(photos);
+            } else {
+                console.log('⚡ Skipping preload for Thailand photos for faster loading');
+            }
             this.updateProgress(75);
             
             // Create photo displays
@@ -703,83 +707,78 @@ class VRMuseum {
     async loadPhotos(theme) {
         console.log(`📸 Loading photos for theme: ${theme.name}`);
         
-        // For Thailand theme, force load actual photos
+        // For Thailand theme, FORCE load actual photos - no fallback
         if (theme.id === 'thailand') {
-            console.log('🇹🇭 Loading Thailand photos - bypassing demo photos');
+            console.log('🇹🇭 FORCING Thailand photos - NO fallback to demo photos');
             
-            // Try to load actual Thailand photos directly
-            const actualPhotos = [];
-            for (let i = 1; i <= 8; i++) {
-                const photoUrl = `assets/photos/thailand/thailand${i}.JPG`;
-                console.log(`Testing photo: ${photoUrl}`);
-                
-                try {
-                    // Test if image loads with shorter timeout
-                    const imageExists = await this.testImageLoad(photoUrl, 2000); // 2 second timeout
-                    if (imageExists) {
-                        actualPhotos.push({
-                            src: photoUrl,
-                            title: `Thailand Memory ${i}`,
-                            description: `Beautiful moment from Thailand adventure`,
-                            location: 'Thailand',
-                            date: '2024-06-23'
-                        });
-                        console.log(`✅ Added Thailand photo ${i}`);
-                    } else {
-                        console.log(`❌ Thailand photo ${i} not found`);
-                    }
-                } catch (error) {
-                    console.log(`❌ Error loading Thailand photo ${i}:`, error);
+            // Create photos array with your actual photos
+            const actualPhotos = [
+                {
+                    src: 'assets/photos/thailand/thailand1.JPG',
+                    title: 'Thailand Adventure 1',
+                    description: 'Beautiful Thailand memory',
+                    location: 'Thailand',
+                    date: '2024-06-23'
+                },
+                {
+                    src: 'assets/photos/thailand/thailand2.JPG',
+                    title: 'Thailand Adventure 2',
+                    description: 'Beautiful Thailand memory',
+                    location: 'Thailand',
+                    date: '2024-06-23'
+                },
+                {
+                    src: 'assets/photos/thailand/thailand3.JPG',
+                    title: 'Thailand Adventure 3',
+                    description: 'Beautiful Thailand memory',
+                    location: 'Thailand',
+                    date: '2024-06-23'
+                },
+                {
+                    src: 'assets/photos/thailand/thailand4.JPG',
+                    title: 'Thailand Adventure 4',
+                    description: 'Beautiful Thailand memory',
+                    location: 'Thailand',
+                    date: '2024-06-23'
+                },
+                {
+                    src: 'assets/photos/thailand/thailand5.JPG',
+                    title: 'Thailand Adventure 5',
+                    description: 'Beautiful Thailand memory',
+                    location: 'Thailand',
+                    date: '2024-06-23'
+                },
+                {
+                    src: 'assets/photos/thailand/thailand6.JPG',
+                    title: 'Thailand Adventure 6',
+                    description: 'Beautiful Thailand memory',
+                    location: 'Thailand',
+                    date: '2024-06-23'
+                },
+                {
+                    src: 'assets/photos/thailand/thailand7.JPG',
+                    title: 'Thailand Adventure 7',
+                    description: 'Beautiful Thailand memory',
+                    location: 'Thailand',
+                    date: '2024-06-23'
+                },
+                {
+                    src: 'assets/photos/thailand/thailand8.JPG',
+                    title: 'Thailand Adventure 8',
+                    description: 'Beautiful Thailand memory',
+                    location: 'Thailand',
+                    date: '2024-06-23'
                 }
-            }
+            ];
             
-            if (actualPhotos.length > 0) {
-                console.log(`✅ Found ${actualPhotos.length} Thailand photos - using them!`);
-                return actualPhotos;
-            } else {
-                console.log('⚠️ No Thailand photos found, falling back to PhotoLoader');
-            }
+            console.log(`✅ FORCED loading ${actualPhotos.length} Thailand photos - NO DEMO PHOTOS!`);
+            return actualPhotos;
         }
         
-        // Use PhotoLoader for other themes or fallback
+        // Use PhotoLoader for other themes only
         const photos = await this.photoLoader.loadPhotosForTheme(theme.photoFolder, theme.id);
         console.log(`PhotoLoader returned ${photos.length} photos for ${theme.id}`);
         return photos;
-    }
-    
-    // Helper function to test if an image loads
-    testImageLoad(url, timeout = 3000) {
-        return new Promise((resolve) => {
-            const img = new Image();
-            let resolved = false;
-            
-            img.onload = () => {
-                if (!resolved) {
-                    resolved = true;
-                    console.log(`✅ Image loaded successfully: ${url}`);
-                    resolve(true);
-                }
-            };
-            
-            img.onerror = () => {
-                if (!resolved) {
-                    resolved = true;
-                    console.log(`❌ Image failed to load: ${url}`);
-                    resolve(false);
-                }
-            };
-            
-            // Set timeout
-            setTimeout(() => {
-                if (!resolved) {
-                    resolved = true;
-                    console.log(`⏰ Image load timeout (${timeout}ms): ${url}`);
-                    resolve(false);
-                }
-            }, timeout);
-            
-            img.src = url;
-        });
     }
 }
 
