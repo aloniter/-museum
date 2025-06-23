@@ -403,86 +403,52 @@ class VRMuseum {
     }
     
     createPhotoFrame(photo, position, theme) {
+        console.log(`🖼️ Creating frame for photo: ${photo.src}`, { photo, position, theme });
+
         const frameEntity = document.createElement('a-entity');
         frameEntity.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
-        
+
         if (position.rotation) {
             frameEntity.setAttribute('rotation', `${position.rotation.x} ${position.rotation.y} ${position.rotation.z}`);
         }
-        
+
         frameEntity.setAttribute('class', 'interactive photo-frame');
-        
-        // Choose frame style based on theme
+
         const frameColor = theme.id === 'thailand' ? '#8B4513' : '#2c2c2c';
         const frameWidth = 2.2;
         const frameHeight = 1.7;
-        const photoWidth = 2.0;
-        const photoHeight = 1.5;
-        
+
         frameEntity.innerHTML = `
-            <!-- Frame Background -->
-            <a-box width="${frameWidth}" height="${frameHeight}" depth="0.1" 
-                   color="${frameColor}" 
-                   material="roughness: 0.8"
-                   shadow="cast: true; receive: true">
+            <a-box class="frame-bg" 
+                   width="${frameWidth}" height="${frameHeight}" depth="0.1"
+                   color="${frameColor}"
+                   material="roughness: 0.8; metalness: 0.1"
+                   shadow="cast: true">
             </a-box>
-            
-            <!-- Photo -->
-            <a-plane width="${photoWidth}" height="${photoHeight}" 
+            <a-plane class="photo-image"
+                     width="${frameWidth - 0.2}" height="${frameHeight - 0.2}"
                      position="0 0 0.06"
-                     material="src: ${photo.src}; transparent: true"
-                     shadow="cast: true">
+                     material="shader: flat; src: ${photo.src}; transparent: true; color: #fff;">
             </a-plane>
-            
-            <!-- Photo Information Panel -->
-            <a-plane width="2" height="0.3" position="0 -1.1 0.02"
-                     color="#000000" material="opacity: 0.8; transparent: true">
-            </a-plane>
-            
-            <!-- Photo Title -->
-            <a-text value="${photo.title}" 
-                    position="0 -1.1 0.03" 
-                    align="center" 
-                    color="#ffffff" 
-                    width="6"
-                    font="dejavu">
+            <a-text class="photo-title"
+                    value="${photo.title || ''}"
+                    position="0 -${frameHeight / 2 + 0.2} 0.06"
+                    align="center" color="#ffffff" width="6" font="dejavu">
             </a-text>
-            
-            <!-- Photo Location (if available) -->
-            ${photo.location ? `
-            <a-text value="${photo.location}" 
-                    position="0 -1.25 0.03" 
-                    align="center" 
-                    color="#cccccc" 
-                    width="4"
-                    font="dejavu">
-            </a-text>
-            ` : ''}
         `;
         
-        // Add interaction events
-        frameEntity.addEventListener('click', () => {
-            this.onPhotoClick(photo);
+        const imagePlane = frameEntity.querySelector('.photo-image');
+        imagePlane.addEventListener('materialtextureloaded', () => {
+            console.log(`✅ Texture loaded successfully for ${photo.src}`);
         });
-        
-        // Add hover effects
-        frameEntity.addEventListener('mouseenter', () => {
-            frameEntity.setAttribute('animation__hover', {
-                property: 'scale',
-                to: '1.05 1.05 1.05',
-                dur: 200
-            });
+        imagePlane.addEventListener('materialerror', (err) => {
+            console.error(`❌ Texture FAILED to load for ${photo.src}`, err);
         });
-        
-        frameEntity.addEventListener('mouseleave', () => {
-            frameEntity.setAttribute('animation__hover', {
-                property: 'scale',
-                to: '1 1 1',
-                dur: 200
-            });
-        });
-        
+
+        frameEntity.addEventListener('click', () => this.onPhotoClick(photo));
+
         this.photoContainer.appendChild(frameEntity);
+        console.log(`➡️ Frame for ${photo.src} added to the scene.`);
     }
     
     async loadAudio(theme) {
@@ -707,71 +673,28 @@ class VRMuseum {
     async loadPhotos(theme) {
         console.log(`📸 Loading photos for theme: ${theme.name}`);
         
-        // For Thailand theme, FORCE load actual photos - no fallback
         if (theme.id === 'thailand') {
-            console.log('🇹🇭 FORCING Thailand photos - NO fallback to demo photos');
-            
-            // Create photos array with your actual photos
-            const actualPhotos = [
-                {
-                    src: 'assets/photos/thailand/thailand1.JPG',
-                    title: 'Thailand Adventure 1',
-                    description: 'Beautiful Thailand memory',
-                    location: 'Thailand',
-                    date: '2024-06-23'
-                },
-                {
-                    src: 'assets/photos/thailand/thailand2.JPG',
-                    title: 'Thailand Adventure 2',
-                    description: 'Beautiful Thailand memory',
-                    location: 'Thailand',
-                    date: '2024-06-23'
-                },
-                {
-                    src: 'assets/photos/thailand/thailand3.JPG',
-                    title: 'Thailand Adventure 3',
-                    description: 'Beautiful Thailand memory',
-                    location: 'Thailand',
-                    date: '2024-06-23'
-                },
-                {
-                    src: 'assets/photos/thailand/thailand4.JPG',
-                    title: 'Thailand Adventure 4',
-                    description: 'Beautiful Thailand memory',
-                    location: 'Thailand',
-                    date: '2024-06-23'
-                },
-                {
-                    src: 'assets/photos/thailand/thailand5.JPG',
-                    title: 'Thailand Adventure 5',
-                    description: 'Beautiful Thailand memory',
-                    location: 'Thailand',
-                    date: '2024-06-23'
-                },
-                {
-                    src: 'assets/photos/thailand/thailand6.JPG',
-                    title: 'Thailand Adventure 6',
-                    description: 'Beautiful Thailand memory',
-                    location: 'Thailand',
-                    date: '2024-06-23'
-                },
-                {
-                    src: 'assets/photos/thailand/thailand7.JPG',
-                    title: 'Thailand Adventure 7',
-                    description: 'Beautiful Thailand memory',
-                    location: 'Thailand',
-                    date: '2024-06-23'
-                },
-                {
-                    src: 'assets/photos/thailand/thailand8.JPG',
-                    title: 'Thailand Adventure 8',
-                    description: 'Beautiful Thailand memory',
-                    location: 'Thailand',
-                    date: '2024-06-23'
-                }
+            console.log('🇹🇭 FORCE-LOADING THAILAND PHOTOS (lowercase .jpg)');
+            const photoPaths = [
+                'assets/photos/thailand/thailand1.jpg',
+                'assets/photos/thailand/thailand2.jpg',
+                'assets/photos/thailand/thailand3.jpg',
+                'assets/photos/thailand/thailand4.jpg',
+                'assets/photos/thailand/thailand5.jpg',
+                'assets/photos/thailand/thailand6.jpg',
+                'assets/photos/thailand/thailand7.jpg',
+                'assets/photos/thailand/thailand8.jpg'
             ];
             
-            console.log(`✅ FORCED loading ${actualPhotos.length} Thailand photos - NO DEMO PHOTOS!`);
+            const actualPhotos = photoPaths.map((path, i) => ({
+                src: path,
+                title: `Thailand Memory ${i + 1}`,
+                description: 'A beautiful memory from Thailand.',
+                location: 'Thailand',
+                date: '2024-06-23'
+            }));
+
+            console.log(`✅ Constructed ${actualPhotos.length} photo objects.`, actualPhotos);
             return actualPhotos;
         }
         
