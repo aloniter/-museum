@@ -120,6 +120,52 @@
         <!-- Photo Display Area -->
         <a-entity id="photo-container"></a-entity>
 
+        <!-- VR Navigation Buttons -->
+        <a-entity id="vr-navigation" position="0 2.5 -4">
+            <!-- Previous Room Button -->
+            <a-box id="prev-room-btn" 
+                   position="-2 0 0" 
+                   width="1.5" height="0.5" depth="0.1"
+                   color="#6366f1" 
+                   material="roughness: 0.3"
+                   class="interactive vr-button"
+                   animation__click="property: scale; to: 0.9 0.9 0.9; dur: 100; autoplay: false"
+                   animation__release="property: scale; to: 1 1 1; dur: 100; autoplay: false">
+                <a-text value="← Previous Room" 
+                        position="0 0 0.06" 
+                        align="center" 
+                        color="#ffffff" 
+                        font="kelsonsans"
+                        width="8"></a-text>
+            </a-box>
+            
+            <!-- Next Room Button -->
+            <a-box id="next-room-btn" 
+                   position="2 0 0" 
+                   width="1.5" height="0.5" depth="0.1"
+                   color="#6366f1" 
+                   material="roughness: 0.3"
+                   class="interactive vr-button"
+                   animation__click="property: scale; to: 0.9 0.9 0.9; dur: 100; autoplay: false"
+                   animation__release="property: scale; to: 1 1 1; dur: 100; autoplay: false">
+                <a-text value="Next Room →" 
+                        position="0 0 0.06" 
+                        align="center" 
+                        color="#ffffff" 
+                        font="kelsonsans"
+                        width="8"></a-text>
+            </a-box>
+            
+            <!-- Current Room Display -->
+            <a-text id="vr-room-display" 
+                    value="Gallery" 
+                    position="0 0.8 0" 
+                    align="center" 
+                    color="#333333" 
+                    font="kelsonsans"
+                    width="12"></a-text>
+        </a-entity>
+
         <!-- Navigation Portals -->
         <a-entity id="portal-container"></a-entity>
 
@@ -134,21 +180,24 @@
                       wasd-controls="acceleration: 20; fly: false"
                       cursor="rayOrigin: mouse; fuse: false">
                 
-                <!-- VR Controllers -->
+                <!-- Left VR Controller -->
                 <a-entity id="left-controller"
                           hand-controls="hand: left; handModelStyle: lowPoly; color: #15ACCF"
                           vive-controls="hand: left"
                           oculus-touch-controls="hand: left"
-                          windows-motion-controls="hand: left">
+                          windows-motion-controls="hand: left"
+                          thumbstick-logging>
                 </a-entity>
                 
+                <!-- Right VR Controller -->
                 <a-entity id="right-controller"
                           hand-controls="hand: right; handModelStyle: lowPoly; color: #15ACCF"
                           vive-controls="hand: right"
                           oculus-touch-controls="hand: right"
                           windows-motion-controls="hand: right"
                           laser-controls="hand: right"
-                          raycaster="objects: .interactive; far: 10">
+                          raycaster="objects: .interactive; far: 10; showLine: true; lineColor: #15ACCF; lineOpacity: 0.8"
+                          cursor="fuse: false">
                 </a-entity>
             </a-camera>
         </a-entity>

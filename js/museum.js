@@ -120,6 +120,17 @@ class VRMuseum {
             this.toggleFullscreen();
         });
         
+        // VR Navigation Buttons
+        document.querySelector('#prev-room-btn')?.addEventListener('click', () => {
+            console.log('🎮 VR Previous room clicked');
+            this.previousTheme();
+        });
+        
+        document.querySelector('#next-room-btn')?.addEventListener('click', () => {
+            console.log('🎮 VR Next room clicked');
+            this.nextTheme();
+        });
+        
         // Keyboard controls
         document.addEventListener('keydown', (event) => {
             this.handleKeyboardInput(event);
@@ -642,6 +653,12 @@ class VRMuseum {
         if (this.currentThemeDisplay) {
             this.currentThemeDisplay.textContent = themeName;
         }
+        
+        // Update VR room display
+        const vrRoomDisplay = document.querySelector('#vr-room-display');
+        if (vrRoomDisplay) {
+            vrRoomDisplay.setAttribute('value', themeName);
+        }
     }
     
     updateProgress(percentage) {
@@ -697,8 +714,8 @@ class VRMuseum {
                 console.log(`Testing photo: ${photoUrl}`);
                 
                 try {
-                    // Test if image loads
-                    const imageExists = await this.testImageLoad(photoUrl);
+                    // Test if image loads with shorter timeout
+                    const imageExists = await this.testImageLoad(photoUrl, 2000); // 2 second timeout
                     if (imageExists) {
                         actualPhotos.push({
                             src: photoUrl,
@@ -731,24 +748,37 @@ class VRMuseum {
     }
     
     // Helper function to test if an image loads
-    testImageLoad(url) {
+    testImageLoad(url, timeout = 3000) {
         return new Promise((resolve) => {
             const img = new Image();
-            img.onload = () => {
-                console.log(`✅ Image loaded successfully: ${url}`);
-                resolve(true);
-            };
-            img.onerror = () => {
-                console.log(`❌ Image failed to load: ${url}`);
-                resolve(false);
-            };
-            img.src = url;
+            let resolved = false;
             
-            // Timeout after 5 seconds
+            img.onload = () => {
+                if (!resolved) {
+                    resolved = true;
+                    console.log(`✅ Image loaded successfully: ${url}`);
+                    resolve(true);
+                }
+            };
+            
+            img.onerror = () => {
+                if (!resolved) {
+                    resolved = true;
+                    console.log(`❌ Image failed to load: ${url}`);
+                    resolve(false);
+                }
+            };
+            
+            // Set timeout
             setTimeout(() => {
-                console.log(`⏰ Image load timeout: ${url}`);
-                resolve(false);
-            }, 5000);
+                if (!resolved) {
+                    resolved = true;
+                    console.log(`⏰ Image load timeout (${timeout}ms): ${url}`);
+                    resolve(false);
+                }
+            }, timeout);
+            
+            img.src = url;
         });
     }
 }
